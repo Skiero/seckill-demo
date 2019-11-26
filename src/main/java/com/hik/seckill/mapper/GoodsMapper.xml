@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hik.seckill.mapper.GoodsMapper">
+    <resultMap id="BaseMapper" type="com.hik.seckill.model.entity.GoodsEntity">
+        <id column="id" property="id"/>
+        <result column="g_name" property="gName"/>
+        <result column="g_index_code" property="gIndexCode"/>
+        <result column="g_type" property="gType"/>
+        <result column="g_count" property="gCount"/>
+        <!--BaseEntity-->
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="create_id" property="createId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_id" property="updateId"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <insert id="add" parameterType="com.hik.seckill.model.entity.GoodsEntity" useGeneratedKeys="true" keyColumn="id"
+            keyProperty="id">
+        insert into tb_goods
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="gName != null and gName != ''">
+                g_name,
+            </if>
+            <if test="gIndexCode != null and gIndexCode != ''">
+                g_index_code,
+            </if>
+            <if test="gType != null and gType != ''">
+                g_type,
+            </if>
+            <if test="gCount != null and gCount != ''">
+                g_count,
+            </if>
+            /*BaseEntity*/
+            <if test="status != null and status > 0">
+                status,
+            </if>
+            <if test="remark != null and remark != ''">
+                remark,
+            </if>
+            <if test="createId != null and createId > 0">
+                create_id,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateId != null and updateId > 0">
+                update_id,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+        </trim>
+        <trim prefix=" values (" suffix=");" suffixOverrides=",">
+            <if test="gName != null and gName != ''">
+                #{gName},
+            </if>
+            <if test="gIndexCode != null and gIndexCode != ''">
+                #{gIndexCode},
+            </if>
+            <if test="gType != null and gType != ''">
+                #{gType},
+            </if>
+            <if test="gCount != null and gCount != ''">
+                #{gCount},
+            </if>
+            /*BaseEntity*/
+            <if test="status != null and status > 0">
+                #{status},
+            </if>
+            <if test="remark != null and remark != ''">
+                #{remark},
+            </if>
+            <if test="createId != null and createId > 0">
+                #{createId},
+            </if>
+            <if test="createTime != null">
+                #{createTime},
+            </if>
+            <if test="updateId != null and updateId > 0">
+                #{updateId},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="remove" parameterType="java.lang.Integer">
+        update tb_goods set status = 2 , update_id = #{userId} where id = #{id};
+    </update>
+
+    <update id="reduce" parameterType="java.lang.Integer">
+        update tb_goods set g_count = (g_count - #{count}) , remark = #{userId} where g_count > #{count} and id = #{id};
+    </update>
+
+    <update id="modify" parameterType="com.hik.seckill.model.entity.GoodsEntity">
+        update tb_goods set
+        <trim suffixOverrides=",">
+            <if test="gName != null and gName != ''">
+                g_name = #{gName},
+            </if>
+            <if test="gIndexCode != null and gIndexCode != ''">
+                g_index_code = #{gIndexCode},
+            </if>
+            <if test="gType != null and gType != ''">
+                g_type = #{gType},
+            </if>
+            <if test="gCount != null and gCount != ''">
+                g_count = #{gCount},
+            </if>
+            /*BaseEntity*/
+            <if test="status != null and status > 0">
+                status = #{status},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="createId != null and createId > 0">
+                create_id = #{createId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateId != null and updateId > 0">
+                update_id = #{updateId},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </trim>
+        where id = #{id};
+    </update>
+
+    <select id="queryById" parameterType="java.lang.Integer" resultMap="BaseMapper">
+        select id,g_name,g_index_code,g_type,g_count,status,remark,create_id,create_time,update_id,update_time
+        from tb_goods where id = #{id};
+    </select>
+
+    <select id="queryByIdList" resultMap="BaseMapper">
+        select id,g_name,g_index_code,g_type,g_count,status,remark,create_id,create_time,update_id,update_time
+        from tb_goods where id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="queryByFuzzyQuery" resultMap="BaseMapper">
+        select id,g_name,g_index_code,g_type,g_count,status,remark,create_id,create_time,update_id,update_time
+        from tb_goods where 1 = 1
+        <trim>
+            <if test="id != null and id > 0">and id = #{id}</if>
+            <if test="gName !=null and gName != ''">and g_name = #{gName}</if>
+            <if test="gIndexCode != null and gIndexCode != ''">and g_index_code = #{gIndexCode}</if>
+            <if test="gType != null and gType != ''">and g_type = #{gType}</if>
+            <if test="gCount != null and gCount > 0">and g_count > #{gCount}</if>
+            <if test="status != null and status > 0">and status = #{status}</if>
+        </trim>
+        ;
+    </select>
+</mapper>
