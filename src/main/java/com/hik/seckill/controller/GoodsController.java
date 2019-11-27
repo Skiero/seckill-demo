@@ -41,6 +41,7 @@ public class GoodsController {
 
     @Autowired
     private IGoodsService goodsService;
+
     @Autowired
     private ValidatorImpl validator;
 

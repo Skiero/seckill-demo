@@ -23,8 +23,10 @@ import java.util.Objects;
  */
 @Service
 public class UserServiceImpl implements IUserService {
+
     @Autowired
     private UserMapper userMapper;
+
     @Autowired
     private ValidatorImpl validator;
 

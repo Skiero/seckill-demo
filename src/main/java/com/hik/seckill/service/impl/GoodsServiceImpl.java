@@ -28,6 +28,7 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class GoodsServiceImpl implements IGoodsService {
+
     @Autowired
     private GoodsMapper goodsMapper;
 

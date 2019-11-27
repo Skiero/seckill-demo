@@ -4,7 +4,6 @@ import com.hik.seckill.error.CommonException;
 import com.hik.seckill.model.dto.GoodsInfoDTO;
 import com.hik.seckill.model.param.GoodsFuzzyQueryParam;
 import com.hik.seckill.model.vo.GoodsInfoVO;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -60,7 +59,7 @@ public interface IGoodsService {
      * @param idList 商品ID集合
      * @return 商品信息集合
      */
-    List<GoodsInfoVO> queryById(@Param("idList") List<Integer> idList);
+    List<GoodsInfoVO> queryById(List<Integer> idList);
 
     /**
      * 根据商品的模糊查询条件查询商品信息

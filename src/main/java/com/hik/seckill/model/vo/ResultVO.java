@@ -16,6 +16,9 @@ public class ResultVO<T> implements Serializable {
 
     private T data;
 
+    public ResultVO() {
+    }
+
     private ResultVO(String code, String msg, T data) {
         this.code = code;
         this.msg = msg;

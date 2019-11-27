@@ -33,6 +33,7 @@ import java.util.Optional;
 @Validated
 @Slf4j
 public class ShoppingController {
+
     @Autowired
     private IShoppingService shoppingService;
 
@@ -111,7 +112,7 @@ public class ShoppingController {
 
     @PostMapping("/order")
     @ApiOperation(value = "下订单", notes = "下订单")
-    public ResultVO addOrder(@Validated @RequestBody OrderInfoParam orderInfoParam) {
+    public ResultVO<OrderInfoVO> addOrder(@Validated @RequestBody OrderInfoParam orderInfoParam) {
         Optional<Integer> optional = CasUtil.getUserId();
         if (!optional.isPresent()) {
             log.debug("ShoppingController addOrder error code is {} , message is {} ", EmBusinessError.USER_NOT_LOGIN.getErrCode(), EmBusinessError.USER_NOT_LOGIN.getErrMsg());

@@ -2,12 +2,16 @@ package com.hik.seckill.model.vo;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * Created by wangJinChang on 2019/11/25 19:57
  * 订单信息视图对象
  */
 @Data
-public class OrderInfoVO {
+public class OrderInfoVO implements Serializable {
+
+    private static final long serialVersionUID = 8260651273857341303L;
 
     private Integer id;//订单ID
 

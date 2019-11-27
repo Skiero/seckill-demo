@@ -43,10 +43,13 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ShoppingServiceImpl implements IShoppingService {
+
     @Autowired
     private CartEntityMapper cartEntityMapper;
+
     @Autowired
     private OrderEntityMapper orderEntityMapper;
+
     @Autowired
     private GoodsMapper goodsMapper;
 
@@ -205,6 +208,7 @@ public class ShoppingServiceImpl implements IShoppingService {
         OrderEntity orderEntity = new OrderEntity();
         BeanUtils.copyProperties(orderInfoDTO, orderEntity);
         orderEntity.setId(null);
+        orderEntity.setUserId(userId);
         orderEntity.setCreateId(userId);
         orderEntity.setCreateTime(new Date());
         orderEntity.setStatus(1);
@@ -252,6 +256,13 @@ public class ShoppingServiceImpl implements IShoppingService {
         return getOrderInfoVOPageVO(orderInfoVOList);
     }
 
+    /**
+     * 获取CartInfoVOList
+     *
+     * @param cartInfoVOList 初始化的CartInfoVOList集合
+     * @param cartEntityList CartEntity购物车实体类集合
+     * @return CartInfoVOList集合
+     */
     private List<CartInfoVO> getCartInfoVOList(List<CartInfoVO> cartInfoVOList, List<CartEntity> cartEntityList) {
         for (CartEntity cartEntity : cartEntityList) {
             cartInfoVOList = Lists.newArrayList();
@@ -262,6 +273,12 @@ public class ShoppingServiceImpl implements IShoppingService {
         return cartInfoVOList;
     }
 
+    /**
+     * 获取CartInfoVOPageVO
+     *
+     * @param shoppingCart shoppingCart购物车信息视图集合
+     * @return CartInfoVOPageVO分页视图对象
+     */
     private PageVO<CartInfoVO> getCartInfoVOPageVO(List<CartInfoVO> shoppingCart) {
         PageVO<CartInfoVO> pageVO = new PageVO<>();
         pageVO.setList(shoppingCart);
@@ -272,6 +289,13 @@ public class ShoppingServiceImpl implements IShoppingService {
         return pageVO;
     }
 
+    /**
+     * 获取OrderInfoVOList
+     *
+     * @param orderInfoVOList 初始化的OrderInfoVOList集合
+     * @param orderEntityList OrderEntity实体类集合
+     * @return OrderInfoVOList集合
+     */
     private List<OrderInfoVO> getOrderInfoVOList(List<OrderInfoVO> orderInfoVOList, List<OrderEntity> orderEntityList) {
         for (OrderEntity orderEntity : orderEntityList) {
             orderInfoVOList = Lists.newArrayList();
@@ -282,6 +306,12 @@ public class ShoppingServiceImpl implements IShoppingService {
         return orderInfoVOList;
     }
 
+    /**
+     * 获取OrderInfoVOPageVO
+     *
+     * @param orderInfoVOList OrderInfoVO集合
+     * @return OrderInfoVOPageVO分页视图对象
+     */
     private PageVO<OrderInfoVO> getOrderInfoVOPageVO(List<OrderInfoVO> orderInfoVOList) {
         PageVO<OrderInfoVO> pageVO = new PageVO<>();
         pageVO.setList(orderInfoVOList);

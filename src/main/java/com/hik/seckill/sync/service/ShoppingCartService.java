@@ -21,6 +21,13 @@ public class ShoppingCartService {
     @Autowired
     private CartEntityMapper cartEntityMapper;
 
+    /**
+     * 增加购物车信息到数据库
+     *
+     * @param cartInfoVO 购物车信息视图对象
+     * @param userId     当前登录的用户ID
+     * @return 添加到数据库时的执行结果枚举
+     */
     public ShoppingCartResponseEnum addShoppingCartToDataBase(CartInfoVO cartInfoVO, Integer userId) {
         CartEntity cartEntity = new CartEntity();
         BeanUtils.copyProperties(cartInfoVO, cartEntity);
@@ -43,6 +50,13 @@ public class ShoppingCartService {
         return ShoppingCartResponseEnum.FAILURE;
     }
 
+    /**
+     * 修改数据库中的购物车信息
+     *
+     * @param cartInfoVO 购物车信息视图对象
+     * @param userId     当前登录的用户ID
+     * @return 修改数据库中的数据时的执行结果枚举
+     */
     public ShoppingCartResponseEnum modifyShoppingCartFromDataBase(CartInfoVO cartInfoVO, Integer userId) {
         CartEntity cartEntity = new CartEntity();
         BeanUtils.copyProperties(cartInfoVO, cartEntity);
@@ -62,6 +76,13 @@ public class ShoppingCartService {
         return ShoppingCartResponseEnum.FAILURE;
     }
 
+    /**
+     * 删除数据库中的购物车信息(购物车的具体商品信息)
+     *
+     * @param cartInfoVO 购物车信息视图对象
+     * @param userId     当前登录的用户ID
+     * @return 删除数据中的数据时的执行结果枚举
+     */
     public ShoppingCartResponseEnum removeShoppingCartFromDataBase(CartInfoVO cartInfoVO, Integer userId) {
         int row;
         try {

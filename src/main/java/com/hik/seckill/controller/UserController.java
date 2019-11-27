@@ -42,6 +42,7 @@ import java.security.NoSuchAlgorithmException;
 @RequestMapping("/user")
 @Validated
 public class UserController {
+
     @Autowired
     private IUserService userService;
 
