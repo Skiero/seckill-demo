@@ -17,5 +17,10 @@ CREATE TABLE tb_order (
 	create_time timestamp NULL,
 	update_id int4 NULL,
 	update_time timestamp NULL,
+	order_id int8 NULL,
+	order_price numeric NULL,
+	item_price numeric NULL,
+	promo_id int4 NULL,
 	CONSTRAINT pk_oid PRIMARY KEY (id)
 );
+

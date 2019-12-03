@@ -69,4 +69,11 @@ public interface GoodsMapper {
      * @return 商品信息集合
      */
     List<GoodsEntity> queryByFuzzyQuery(GoodsFuzzyQueryParam goodsFuzzyQueryParam);
+
+    /**
+     * 获取所有商品信息
+     *
+     * @return 商品信息集合
+     */
+    List<GoodsEntity> queryAll();
 }

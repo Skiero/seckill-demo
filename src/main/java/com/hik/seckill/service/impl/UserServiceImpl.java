@@ -67,7 +67,8 @@ public class UserServiceImpl implements IUserService {
     public UserInfoDTO query(UserQueryParam userParam) throws CommonException {
         UserEntity userEntity = userMapper.query(userParam);
         if (userEntity == null) {
-            throw new CommonException(EmBusinessError.USER_NOT_EXIST.getErrCode(), EmBusinessError.USER_NOT_EXIST.getErrMsg());
+//            throw new CommonException(EmBusinessError.USER_NOT_EXIST.getErrCode(), EmBusinessError.USER_NOT_EXIST.getErrMsg());
+            return null;
         }
         UserInfoDTO userInfoDTO = convertFromEntity(userEntity);
         if (StringUtils.isNotBlank(userInfoDTO.getPhone())) {

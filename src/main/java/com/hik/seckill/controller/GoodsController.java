@@ -7,6 +7,7 @@ import com.hik.seckill.enums.EmBusinessError;
 import com.hik.seckill.model.param.GoodsFuzzyQueryParam;
 import com.hik.seckill.model.param.GoodsInfoParam;
 import com.hik.seckill.model.vo.GoodsInfoVO;
+import com.hik.seckill.model.vo.ItemVO;
 import com.hik.seckill.model.vo.ResultVO;
 import com.hik.seckill.service.IGoodsService;
 import com.hik.seckill.utils.CasUtil;
@@ -26,6 +27,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -51,7 +53,7 @@ public class GoodsController {
      * @param goodsInfoParam 商品信息入参
      * @return ResultVO
      */
-    @PostMapping("/add")
+    @PostMapping(value = "/add", consumes = "application/json")
     @ApiOperation(value = "新增商品信息", notes = "新增商品信息")
     public ResultVO addGoodsInformation(@Valid @RequestBody GoodsInfoParam goodsInfoParam) {
         Optional<Integer> optional = CasUtil.getUserId();
@@ -163,6 +165,16 @@ public class GoodsController {
         return ResultVO.success("查询成功", goodsInfoVO);
     }
 
+    @GetMapping("/get")
+    @ApiOperation(value = "根据商品ID查询商品信息", notes = "根据商品ID查询商品信息用于秒杀活动")
+    public ResultVO queryItemVOById(@Min(value = 1, message = "商品ID最小为1") @RequestParam("id") Integer id) {
+        ItemVO itemVO = goodsService.queryItemVOById(id);
+        if (Objects.isNull(itemVO)) {
+            return ResultVO.error(EmBusinessError.GOODS_NOT_EXIST.getErrCode(), EmBusinessError.GOODS_NOT_EXIST.getErrMsg());
+        }
+        return ResultVO.success("查询成功", itemVO);
+    }
+
     /**
      * 根据商品ID集合查询商品信息
      *
@@ -210,6 +222,23 @@ public class GoodsController {
             return ResultVO.error(EmBusinessError.USER_NOT_LOGIN.getErrCode(), EmBusinessError.USER_NOT_LOGIN.getErrMsg());
         }
         List<GoodsInfoVO> goodsInfoVOList = goodsService.queryByFuzzyQuery(goodsFuzzyQueryParam);
+        return ResultVO.success("查询成功", goodsInfoVOList);
+    }
+
+    /**
+     * 获取所有商品信息
+     *
+     * @return ResultVO
+     */
+    @GetMapping("/goods")
+    @ApiOperation(value = "获取所有商品信息", notes = "获取所有商品信息")
+    public ResultVO queryAll() {
+        Optional<Integer> optional = CasUtil.getUserId();
+        if (!optional.isPresent()) {
+            log.debug("GoodsController addGoodsInformation error , message is {} ", EmBusinessError.USER_NOT_LOGIN.getErrMsg());
+            return ResultVO.error(EmBusinessError.USER_NOT_LOGIN.getErrCode(), EmBusinessError.USER_NOT_LOGIN.getErrMsg());
+        }
+        List<GoodsInfoVO> goodsInfoVOList = goodsService.queryAll();
         return ResultVO.success("查询成功", goodsInfoVOList);
     }
 

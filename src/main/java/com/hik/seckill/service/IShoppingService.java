@@ -58,6 +58,15 @@ public interface IShoppingService {
     OrderInfoVO addOrderInfo(OrderInfoDTO orderInfoDTO, Integer userId) throws CommonException;
 
     /**
+     * 秒杀活动下订单
+     *
+     * @param orderInfoDTO 订单信息数据传输对象
+     * @param userId       当前登录的用户ID
+     * @return 订单信息的展示对象
+     */
+    OrderInfoVO createOrder(OrderInfoDTO orderInfoDTO, Integer userId) throws CommonException;
+
+    /**
      * 取消订单
      *
      * @param id     订单ID

@@ -34,7 +34,7 @@ public class UserInfoParam {
     private String phone;//手机
 
     @ApiModelProperty(value = "年龄", notes = "年龄", dataType = "Integer", position = 5)
-    @Range(min = 0, max = 150, message = "输入的年龄不合法")
+    @Range(min = 1, max = 150, message = "输入的年龄不合法")
     private Integer age;//年龄
 
     @ApiModelProperty(value = "性别", notes = "1表示男 2表示女 3表示未选择", dataType = "Integer", position = 6)
@@ -44,4 +44,8 @@ public class UserInfoParam {
     @ApiModelProperty(value = "状态码", notes = "1表示启用 2表示禁用", dataType = "Integer", position = 7)
     @Range(min = 1, max = 2, message = "输入的状态不合法")
     private Integer status;//状态码 1表示启用 2表示禁用
+
+    @ApiModelProperty(value = "验证码", notes = "6位数的验证码", dataType = "Integer", position = 8)
+    @NotNull(message = "验证码不能为空")
+    private Integer otp;//验证码
 }

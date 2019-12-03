@@ -9,17 +9,19 @@ import lombok.Data;
 @Data
 public class OrderInfoDTO {
 
-    private Integer id;//订单ID
+    private Integer id;             //订单ID
 
-    private Integer userId;//用户ID
+    private Integer userId;         //用户ID
 
-    private Integer goodsId;//商品ID
+    private Integer goodsId;        //商品ID
 
-    private String goodsName;//商品名称
+    private Integer promoId;        //若非空,则表示以秒杀方式下单
 
-    private String goodsType;//商品类别
+    private String goodsName;       //商品名称
 
-    private Integer shoppingCount;//购买数量
+    private String goodsType;       //商品类别
 
-    private String address;//收货地址
+    private Integer shoppingCount;  //购买数量
+
+    private String address;         //收货地址
 }

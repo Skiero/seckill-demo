@@ -4,6 +4,7 @@ import com.hik.seckill.error.CommonException;
 import com.hik.seckill.model.dto.GoodsInfoDTO;
 import com.hik.seckill.model.param.GoodsFuzzyQueryParam;
 import com.hik.seckill.model.vo.GoodsInfoVO;
+import com.hik.seckill.model.vo.ItemVO;
 
 import java.util.List;
 
@@ -54,6 +55,14 @@ public interface IGoodsService {
     GoodsInfoVO queryById(Integer id) throws CommonException;
 
     /**
+     * 根据商品ID查询商品信息(秒杀活动)
+     *
+     * @param id 商品ID
+     * @return 查询成功返回对象, 否则抛出异常
+     */
+    ItemVO queryItemVOById(Integer id);
+
+    /**
      * 根据商品ID集合查询商品信息
      *
      * @param idList 商品ID集合
@@ -68,4 +77,11 @@ public interface IGoodsService {
      * @return 商品信息集合
      */
     List<GoodsInfoVO> queryByFuzzyQuery(GoodsFuzzyQueryParam goodsFuzzyQueryParam);
+
+    /**
+     * 获取所有商品信息
+     *
+     * @return 商品信息集合
+     */
+    List<GoodsInfoVO> queryAll();
 }

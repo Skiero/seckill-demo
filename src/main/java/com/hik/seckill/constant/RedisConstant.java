@@ -6,7 +6,9 @@ package com.hik.seckill.constant;
  */
 public interface RedisConstant {
 
-    String USER_LOGIN_TOKEN = "user-token::";//用户登录时redis的key(和uuid拼接)
+    String OTP_TOKEN = "otp-token::";               //用户注册时获取验证码redis的key(和uuid拼接)
 
-    String SHOPPING_CART_TOKEN = "shopping-cart::";//购物车redis的key(和用户ID拼接)
+    String USER_LOGIN_TOKEN = "user-token::";       //用户登录时redis的key(和uuid拼接)
+
+    String SHOPPING_CART_TOKEN = "shopping-cart::"; //购物车redis的key(和用户ID拼接)
 }

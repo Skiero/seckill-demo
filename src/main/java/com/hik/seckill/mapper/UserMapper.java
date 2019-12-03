@@ -42,4 +42,12 @@ public interface UserMapper {
      * @return 用户实体类
      */
     UserEntity query(UserQueryParam userParam);
+
+    /**
+     * 根据用户ID查询用户信息
+     *
+     * @param id 用户ID
+     * @return 用户实体类
+     */
+    UserEntity queryByPrimaryKey(@Param("id") Integer id);
 }

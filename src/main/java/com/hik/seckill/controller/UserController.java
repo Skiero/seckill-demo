@@ -29,9 +29,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 /**
  * Created by wangJinChang on 2019/11/4 19:16
@@ -46,9 +48,48 @@ public class UserController {
     @Autowired
     private IUserService userService;
 
+    @PostMapping("/otp")
+    @ApiOperation(value = "获取验证码", notes = "获取验证码")
+    public ResultVO getOpt(@Pattern(regexp = "^1([38][0-9]|4[579]|5[0-3,5-9]|6[6]|7[0135678]|9[89])\\d{8}$", message = "输入的手机格式不正确") @RequestParam(value = "telephone") String phone) {
+        //判断号码是否被注册
+        UserQueryParam userQueryParam = new UserQueryParam();
+        userQueryParam.setPhone(phone);
+        try {
+            UserInfoDTO query = userService.query(userQueryParam);
+            if (!Objects.isNull(query)) {
+                return ResultVO.error(EmBusinessError.USER_IS_EXIST.getErrCode(), "该手机号码已注册");
+            }
+        } catch (CommonException e) {
+            return ResultVO.error(e.getErrCode(), e.getErrMsg());
+        }
+        int otp = RandomUtil.randomLong(6);
+        RedisUtil.set(String.format(RedisConstant.USER_LOGIN_TOKEN + "%S", phone), JSON.toJSONString(otp), 60 * 3);
+        System.err.println("phone ==> " + phone + " , otp ==> " + otp);
+        return ResultVO.success("获取成功", otp);
+    }
+
     @PostMapping("/registe")
     @ApiOperation(value = "用户注册", notes = "新用户注册")
     public ResultVO registe(@Valid @RequestBody UserInfoParam userInfoParam) throws CommonException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        //判断用户名是否被注册
+        UserQueryParam userQueryParam = new UserQueryParam();
+        userQueryParam.setAccount(userInfoParam.getAccount());
+        try {
+            UserInfoDTO query = userService.query(userQueryParam);
+            if (!Objects.isNull(query)) {
+                return ResultVO.error(EmBusinessError.USER_IS_EXIST.getErrCode(), "该用户名已注册");
+            }
+        } catch (CommonException e) {
+            return ResultVO.error(e.getErrCode(), e.getErrMsg());
+        }
+        String redisKey = String.format(RedisConstant.USER_LOGIN_TOKEN + "%S", userInfoParam.getPhone());
+        String redisValue = RedisUtil.get(redisKey);
+        if (StringUtils.isBlank(redisValue)) {
+            return ResultVO.other("验证码已过期,请重新获取");
+        }
+        if (!redisValue.equals(String.valueOf(userInfoParam.getOtp()))) {
+            return ResultVO.error("输入的验证码不正确,请重新输入");
+        }
         String pwd = encodeByMD5(userInfoParam.getPwd());
         userInfoParam.setPwd(pwd);
         UserInfoDTO userInfoDTO = new UserInfoDTO();
@@ -57,6 +98,7 @@ public class UserController {
         if (!b) {
             return ResultVO.error("注册失败");
         }
+        RedisUtil.delete(redisKey);
         return ResultVO.success("注册成功");
     }
 

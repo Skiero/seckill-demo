@@ -7,6 +7,9 @@
         <result column="g_index_code" property="gIndexCode"/>
         <result column="g_type" property="gType"/>
         <result column="g_count" property="gCount"/>
+        <result column="sales" property="sales"/>
+        <result column="g_price" property="gPrice"/>
+        <result column="g_image_url" property="gImageUrl"/>
         <!--BaseEntity-->
         <result column="status" property="status"/>
         <result column="remark" property="remark"/>
@@ -31,6 +34,15 @@
             </if>
             <if test="gCount != null and gCount != ''">
                 g_count,
+            </if>
+            <if test="gPrice != null and gPrice > 0">
+                g_price,
+            </if>
+            <if test="sales != null">
+                sales,
+            </if>
+            <if test="gImageUrl != null and gImageUrl != ''">
+                g_image_url,
             </if>
             /*BaseEntity*/
             <if test="status != null and status > 0">
@@ -65,6 +77,15 @@
             <if test="gCount != null and gCount != ''">
                 #{gCount},
             </if>
+            <if test="gPrice != null and gPrice > 0">
+                #{gPrice},
+            </if>
+            <if test="sales != null">
+                #{sales},
+            </if>
+            <if test="gImageUrl != null and gImageUrl != ''">
+                #{gImageUrl},
+            </if>
             /*BaseEntity*/
             <if test="status != null and status > 0">
                 #{status},
@@ -92,7 +113,7 @@
     </update>
 
     <update id="reduce" parameterType="java.lang.Integer">
-        update tb_goods set g_count = (g_count - #{count}) , remark = #{userId} where g_count > #{count} and id = #{id};
+        update tb_goods set g_count = (g_count - #{count}) , sales = (sales + #{count}) , remark = #{userId} where g_count > #{count} and id = #{id} and status = 1;
     </update>
 
     <update id="modify" parameterType="com.hik.seckill.model.entity.GoodsEntity">
@@ -109,6 +130,12 @@
             </if>
             <if test="gCount != null and gCount != ''">
                 g_count = #{gCount},
+            </if>
+            <if test="gPrice != null and gPrice != ''">
+                g_price = #{gPrice},
+            </if>
+            <if test="gImageUrl != null and gImageUrl != ''">
+                g_image_url = #{gImageUrl},
             </if>
             /*BaseEntity*/
             <if test="status != null and status > 0">
@@ -134,12 +161,12 @@
     </update>
 
     <select id="queryById" parameterType="java.lang.Integer" resultMap="BaseMapper">
-        select id,g_name,g_index_code,g_type,g_count,status,remark,create_id,create_time,update_id,update_time
-        from tb_goods where id = #{id};
+        select id,g_name,g_index_code,g_type,g_count,sales,g_price,g_image_url,status,remark,create_id,create_time,update_id,update_time
+        from tb_goods where id = #{id} and status = 1;
     </select>
 
     <select id="queryByIdList" resultMap="BaseMapper">
-        select id,g_name,g_index_code,g_type,g_count,status,remark,create_id,create_time,update_id,update_time
+        select id,g_name,g_index_code,g_type,g_count,sales,g_price,g_image_url,status,remark,create_id,create_time,update_id,update_time
         from tb_goods where id in
         <foreach collection="idList" item="id" open="(" close=")" separator=",">
             #{id}
@@ -147,7 +174,7 @@
     </select>
 
     <select id="queryByFuzzyQuery" resultMap="BaseMapper">
-        select id,g_name,g_index_code,g_type,g_count,status,remark,create_id,create_time,update_id,update_time
+        select id,g_name,g_index_code,g_type,g_count,sales,g_price,g_image_url,status,remark,create_id,create_time,update_id,update_time
         from tb_goods where 1 = 1
         <trim>
             <if test="id != null and id > 0">and id = #{id}</if>
@@ -158,5 +185,10 @@
             <if test="status != null and status > 0">and status = #{status}</if>
         </trim>
         ;
+    </select>
+
+    <select id="queryAll" resultMap="BaseMapper">
+        select id,g_name,g_index_code,g_type,g_count,sales,g_price,g_image_url,status,remark,create_id,create_time,update_id,update_time
+        from tb_goods where status = 1 order by id;
     </select>
 </mapper>

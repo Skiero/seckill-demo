@@ -25,7 +25,7 @@ import java.util.Objects;
 public class TestTask {
 
     //定时任务,1分钟执行一次。执行频率通过cron表达式确定
-    @Scheduled(cron = "0/60 * * * * ?")
+//    @Scheduled(cron = "0/60 * * * * ?")
     public void test() {
         System.out.println("*** system time is " + DateUtil.formatDate(new Date()) + " ***");
         String url = "http://127.0.0.1:8082" + "/goods/order";

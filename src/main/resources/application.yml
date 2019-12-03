@@ -7,7 +7,7 @@ spring:
     #驱动
     driver-class-name: org.postgresql.Driver
     #url
-    url: jdbc:postgresql://127.0.0.1:5432/postgres
+    url: jdbc:postgresql://127.0.0.1:5432/postgres?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     #账号
     username: postgres
     #密码
@@ -32,6 +32,12 @@ spring:
         max-idle: 10
         #连接池最小空闲连接
         min-idle: 5
+
+  jackson:
+    #时间格式化
+    #date-format: yyyy-MM-dd HH:mm:ss
+    #时区
+    time-zone: GMT+8
 
 logging:
   #日志等级(指定包下的)

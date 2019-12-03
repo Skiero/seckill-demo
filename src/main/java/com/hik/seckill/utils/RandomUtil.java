@@ -41,6 +41,29 @@ public class RandomUtil {
         if (min >= max) {
             return -1;
         }
-        return new Random().nextInt(max - min) + min;
+        int random = new Random().nextInt(max - min) + min;
+        if (random == max) {
+            randomLong(min, max);
+        }
+        return random;
+    }
+
+    /**
+     * 获取指定位数的随机数
+     *
+     * @param digit 随机数的位数
+     * @return 随机int；若入参不符合要求，则返回 -1
+     */
+    public static int randomLong(int digit) {
+        if (digit < 1) {
+            return -1;
+        }
+        int min = (int) Math.pow(10, digit - 1);
+        int max = (int) Math.pow(10, digit);
+        int random = new Random().nextInt(max - min) + min;
+        if (random == max) {
+            randomLong(digit);
+        }
+        return random;
     }
 }

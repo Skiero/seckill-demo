@@ -1,10 +1,12 @@
 package com.hik.seckill.mapper;
 
 import com.hik.seckill.model.entity.OrderEntity;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+@Mapper
 public interface OrderEntityMapper {
     int deleteByPrimaryKey(Integer id);
 

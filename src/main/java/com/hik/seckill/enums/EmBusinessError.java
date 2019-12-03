@@ -29,10 +29,18 @@ public enum EmBusinessError {
 
     USER_INFO_ERROR("20004", "用户信息不合法"),
 
+    USER_IS_EXIST("20005", "用户信息已注册"),
+
     //30000开头    商品信息相关错误
     GOODS_NOT_EXIST("30001", "商品信息不存在"),
 
     GOODS_ID_NOT_NULL("30002", "商品ID不能为空"),
+
+    NOT_SECOND_KILL("30003", "商品暂无秒杀活动"),
+
+    ACTIVITY_NOT_STARTED("30004", "活动未开始"),
+
+    ACTIVITY_IS_ENDED("30005", "活动已结束"),
 
     //40000开头    购物车信息相关错误
     SHOPPING_CART_NOT_EXIST("40001", "购物车不存在"),

@@ -6,6 +6,7 @@ import com.hik.seckill.enums.EmBusinessError;
 import com.hik.seckill.model.dto.OrderInfoDTO;
 import com.hik.seckill.model.param.CartInfoParam;
 import com.hik.seckill.model.param.OrderInfoParam;
+import com.hik.seckill.model.param.OrderInitParam;
 import com.hik.seckill.model.vo.CartInfoVO;
 import com.hik.seckill.model.vo.OrderInfoVO;
 import com.hik.seckill.model.vo.PageVO;
@@ -28,10 +29,11 @@ import java.util.Optional;
  * 购买支付控制器层
  */
 @RestController
-@RequestMapping("/goods")
+@RequestMapping("/shopping")
 @Api(tags = "购买支付控制器层")
 @Validated
 @Slf4j
+@CrossOrigin(origins = {"*"}, allowCredentials = "true")
 public class ShoppingController {
 
     @Autowired
@@ -125,6 +127,28 @@ public class ShoppingController {
             orderInfoVO = shoppingService.addOrderInfo(orderInfoDTO, optional.get());
         } catch (CommonException e) {
             log.error("ShoppingController addOrder has error , error code is {} , error message is {} ", EmBusinessError.SHOPPING_CART_SERVICE_ERROR.getErrCode(), e.getErrMsg());
+            return ResultVO.error(e.getErrCode(), e.getErrMsg());
+        }
+        return ResultVO.success("购买成功", orderInfoVO);
+    }
+
+    @PostMapping(value = "/createOrder", consumes = "application/json")
+    @ApiOperation(value = "下订单", notes = "不经过购物车，直接秒杀")
+    public ResultVO createOrder(@Valid @RequestBody OrderInitParam orderInitParam) {
+        Optional<Integer> optional = CasUtil.getUserId();
+        if (!optional.isPresent()) {
+            log.debug("ShoppingController addOrder error code is {} , message is {} ", EmBusinessError.USER_NOT_LOGIN.getErrCode(), EmBusinessError.USER_NOT_LOGIN.getErrMsg());
+            return ResultVO.error(EmBusinessError.USER_NOT_LOGIN.getErrCode(), EmBusinessError.USER_NOT_LOGIN.getErrMsg());
+        }
+        OrderInfoDTO orderInfoDTO = new OrderInfoDTO();
+        orderInfoDTO.setPromoId(orderInitParam.getPromoId());
+        orderInfoDTO.setGoodsId(orderInitParam.getItemId());
+        orderInfoDTO.setShoppingCount(orderInitParam.getAmount());
+        orderInfoDTO.setAddress(orderInitParam.getAddress());
+        OrderInfoVO orderInfoVO;
+        try {
+            orderInfoVO = shoppingService.createOrder(orderInfoDTO, optional.get());
+        } catch (CommonException e) {
             return ResultVO.error(e.getErrCode(), e.getErrMsg());
         }
         return ResultVO.success("购买成功", orderInfoVO);

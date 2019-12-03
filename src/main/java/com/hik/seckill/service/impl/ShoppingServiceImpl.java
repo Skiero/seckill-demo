@@ -8,13 +8,10 @@ import com.hik.seckill.enums.EmBusinessError;
 import com.hik.seckill.enums.OrderInfoResponseEnum;
 import com.hik.seckill.enums.ShoppingCartResponseEnum;
 import com.hik.seckill.error.CommonException;
-import com.hik.seckill.mapper.CartEntityMapper;
-import com.hik.seckill.mapper.GoodsMapper;
-import com.hik.seckill.mapper.OrderEntityMapper;
+import com.hik.seckill.mapper.*;
 import com.hik.seckill.model.dto.CartInfoDTO;
 import com.hik.seckill.model.dto.OrderInfoDTO;
-import com.hik.seckill.model.entity.CartEntity;
-import com.hik.seckill.model.entity.OrderEntity;
+import com.hik.seckill.model.entity.*;
 import com.hik.seckill.model.vo.CartInfoVO;
 import com.hik.seckill.model.vo.OrderInfoVO;
 import com.hik.seckill.model.vo.PageVO;
@@ -22,15 +19,20 @@ import com.hik.seckill.service.IShoppingService;
 import com.hik.seckill.sync.CallableJob;
 import com.hik.seckill.sync.Executor;
 import com.hik.seckill.sync.RunnableJob;
+import com.hik.seckill.utils.RandomUtil;
 import com.hik.seckill.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -52,6 +54,12 @@ public class ShoppingServiceImpl implements IShoppingService {
 
     @Autowired
     private GoodsMapper goodsMapper;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private PromoEntityMapper promoEntityMapper;
 
     @Override
     public PageVO<CartInfoVO> addShoppingCart(CartInfoDTO cartInfoDTO, Integer userId) throws CommonException {
@@ -195,10 +203,18 @@ public class ShoppingServiceImpl implements IShoppingService {
         return this.getCartInfoVOPageVO(cartInfoVOList);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     @Override
     public OrderInfoVO addOrderInfo(OrderInfoDTO orderInfoDTO, Integer userId) throws CommonException {
         //采用下单减库存策略,若减库存失败,则告知下单失败;若减库存成功,则进行生成订单操作
+
+        //首先判断购物车中是否有要购买商品的信息,若存在则购买,若不存在则返回购物车中无该商品
+        PageVO<CartInfoVO> shoppingCart = this.getShoppingCart(userId);
+        List<CartInfoVO> collect = shoppingCart.getList().stream().filter(cartInfoVO -> Objects.equals(orderInfoDTO.getGoodsId(), cartInfoVO.getGoodsId())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(collect)) {
+            throw new CommonException(EmBusinessError.GOODS_NOT_EXIST.getErrCode(), EmBusinessError.GOODS_NOT_EXIST.getErrMsg());
+        }
+
         //减订单,防止超卖
         int row = goodsMapper.reduce(orderInfoDTO.getGoodsId(), orderInfoDTO.getShoppingCount(), userId);
         if (row < 1) {
@@ -223,6 +239,52 @@ public class ShoppingServiceImpl implements IShoppingService {
         //删除购物车信息
         RunnableJob runnableJob = new RunnableJob(orderInfoDTO.getGoodsId(), userId);
         Executor.submit(runnableJob);
+        return orderInfoVO;
+    }
+
+    @Transactional
+    @Override
+    public OrderInfoVO createOrder(OrderInfoDTO orderInfoDTO, Integer userId) throws CommonException {
+        //下订单前进行合法性校验  商品是否存在 用户是否合法 活动信息是否合法
+        GoodsEntity goodsEntity = goodsMapper.queryById(orderInfoDTO.getGoodsId());
+        if (Objects.isNull(goodsEntity)) {
+            throw new CommonException(EmBusinessError.GOODS_NOT_EXIST.getErrCode(), EmBusinessError.GOODS_NOT_EXIST.getErrMsg());
+        }
+        UserEntity userEntity = userMapper.queryByPrimaryKey(userId);
+        if (Objects.isNull(userEntity)) {
+            throw new CommonException(EmBusinessError.USER_NOT_EXIST.getErrCode(), EmBusinessError.USER_NOT_EXIST.getErrMsg());
+        }
+        PromoEntity promoEntity = null;
+        Integer promoId = orderInfoDTO.getPromoId();
+        if (!Objects.isNull(promoId)) {
+            promoEntity = promoEntityMapper.selectByPrimaryKey(promoId);
+            if (Objects.isNull(promoEntity) || !Objects.equals(promoId, promoEntity.getId())) {
+                throw new CommonException(EmBusinessError.NOT_SECOND_KILL.getErrCode(), EmBusinessError.NOT_SECOND_KILL.getErrMsg());
+            }
+            if (Objects.equals(CommonConstant.ACTIVITY_NOT_STARTED, promoEntity.getStatus())) {
+                throw new CommonException(EmBusinessError.ACTIVITY_NOT_STARTED.getErrCode(), EmBusinessError.ACTIVITY_NOT_STARTED.getErrMsg());
+            }
+            if (Objects.equals(CommonConstant.ACTIVITY_IS_ENDED, promoEntity.getStatus())) {
+                throw new CommonException(EmBusinessError.ACTIVITY_IS_ENDED.getErrCode(), EmBusinessError.ACTIVITY_IS_ENDED.getErrMsg());
+            }
+        }
+        //采用下单减库存策略
+        int reduce = goodsMapper.reduce(orderInfoDTO.getGoodsId(), orderInfoDTO.getShoppingCount(), userId);
+        if (reduce < 1) {
+            throw new CommonException(EmBusinessError.INSUFFICIENT_INVENTORY.getErrCode(), EmBusinessError.INSUFFICIENT_INVENTORY.getErrMsg());
+        }
+        OrderEntity orderEntity = getOrderEntity(orderInfoDTO, userId, goodsEntity, promoEntity);
+        if (Objects.isNull(orderEntity)) {
+            throw new CommonException(EmBusinessError.SHOPPING_CART_SERVICE_ERROR.getErrCode(), EmBusinessError.SHOPPING_CART_SERVICE_ERROR.getErrMsg());
+        }
+        int insert = orderEntityMapper.insertSelective(orderEntity);
+        if (insert < 1) {
+            throw new CommonException(EmBusinessError.GENERATE_ORDER_FAILED.getErrCode(), EmBusinessError.GENERATE_ORDER_FAILED.getErrMsg());
+        }
+        OrderInfoVO orderInfoVO = new OrderInfoVO();
+        BeanUtils.copyProperties(orderEntity, orderInfoVO);
+        //赋值自增主键
+        orderInfoVO.setId(orderEntity.getId());
         return orderInfoVO;
     }
 
@@ -320,5 +382,57 @@ public class ShoppingServiceImpl implements IShoppingService {
         pageVO.setTotal(orderInfoVOList.size());
         pageVO.setTotalPage(orderInfoVOList.size() / 20 + 1);
         return pageVO;
+    }
+
+    /**
+     * 创建订单编号
+     * 订单号16位,前8位为时间信息,中间6位为随机数,后2为为分库分表标记
+     *
+     * @return 订单编号
+     */
+    private long generateOrderNo() {
+        StringBuilder sb = new StringBuilder();
+        LocalDateTime now = LocalDateTime.now();
+        String nowDate = now.format(DateTimeFormatter.ISO_DATE).replace("-", "");
+        sb.append(nowDate);
+        //凑足6位拼接序列
+        String sequenceStr = String.valueOf(RandomUtil.randomLong(1, 9999));
+        //序列值前面的几位补0
+        for (int i = 0; i < 6 - sequenceStr.length(); i++) {
+            sb.append(0);
+        }
+        //将序列拼接上去,例如000001
+        sb.append(sequenceStr);
+        //最后2位为分库分表位
+        sb.append(RandomUtil.randomLong(2));
+        return Long.parseLong(sb.toString());
+    }
+
+    /**
+     * 获取订单实体类
+     *
+     * @param orderInfoDTO 订单信息数据传输对象
+     * @param userId       当前登录的用户ID
+     * @param goodsEntity  商品信息实体类
+     * @param promoEntity  秒杀活动实体类
+     * @return 订单信息实体类
+     */
+    private OrderEntity getOrderEntity(OrderInfoDTO orderInfoDTO, Integer userId, GoodsEntity goodsEntity, PromoEntity promoEntity) {
+        if (orderInfoDTO == null || goodsEntity == null) {
+            return null;
+        }
+        //减库存成功,生成订单
+        OrderEntity orderEntity = new OrderEntity();
+        BeanUtils.copyProperties(orderInfoDTO, orderEntity);
+        orderEntity.setOrderId(generateOrderNo());
+        orderEntity.setUserId(userId);
+        orderEntity.setCreateId(userId);
+        orderEntity.setCreateTime(new Date());
+        orderEntity.setStatus(1);
+        orderEntity.setGoodsName(goodsEntity.getGName());
+        orderEntity.setGoodsType(goodsEntity.getGType());
+        orderEntity.setItemPrice(promoEntity == null ? goodsEntity.getGPrice() : promoEntity.getPromoItemPrice());
+        orderEntity.setOrderPrice(orderEntity.getItemPrice().multiply(new BigDecimal(orderInfoDTO.getShoppingCount())));
+        return orderEntity;
     }
 }
