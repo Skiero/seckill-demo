@@ -8,6 +8,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,5 +48,24 @@ public class HttpUtil {
         headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
         headers.add("token", "test");
         return new HttpEntity<>(obj, headers);
+    }
+
+    public static void write(String str, HttpServletResponse response) {
+        if (response == null) {
+            throw new NullPointerException("HttpServletResponse should not be null!");
+        } else {
+            PrintWriter writer = null;
+            try {
+                response.setContentType("text/html; charset=utf-8");
+                writer = response.getWriter();
+                writer.write(str);
+            } catch (IOException var7) {
+                var7.printStackTrace();
+            } finally {
+                if (writer != null) {
+                    writer.close();
+                }
+            }
+        }
     }
 }

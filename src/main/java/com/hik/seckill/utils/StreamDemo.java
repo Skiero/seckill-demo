@@ -7,10 +7,10 @@ import java.util.stream.Collectors;
 
 /**
  * Created by wangJinChang on 2019/11/8 15:54
- * TODO
+ * Steam流学习demo
  */
 @Slf4j
-public class TestDemo {
+public class StreamDemo {
     public static void main(String[] args) {
         System.out.println("使用 Java 7: ");
 
